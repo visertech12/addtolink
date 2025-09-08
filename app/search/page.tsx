@@ -1,8 +1,7 @@
 'use client'
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; // ✅ prevent prerendering
 
 import { Header } from '@/components/Header'
-
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -18,7 +17,7 @@ interface UserResult {
 export default function SearchPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const query = searchParams.get('query') || ''
+  const query = searchParams?.get('query') || '' // ✅ safe optional chaining
   const [results, setResults] = useState<UserResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,10 +29,14 @@ export default function SearchPage() {
       setLoading(true)
       setError(null)
       try {
-        const token = localStorage.getItem('authToken')
+        // ✅ guard localStorage (only in browser)
+        const token = typeof window !== 'undefined'
+          ? localStorage.getItem('authToken')
+          : null
+
         const res = await axios.get(`${API_URL}/searchUsers.php`, {
           params: { q: query },
-          headers: { Authorization: `Bearer ${token}` },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
 
         if (res.data.success) {
@@ -55,8 +58,8 @@ export default function SearchPage() {
   }, [query])
 
   return (
-<div style={{ paddingTop: '80px', minHeight: '100vh', backgroundColor: '#f0f0e6' }}>
-     <Header />
+    <div style={{ paddingTop: '80px', minHeight: '100vh', backgroundColor: '#f0f0e6' }}>
+      <Header />
 
       <div style={{ padding: '80px 20px 20px 20px', maxWidth: '600px', margin: '0 auto', borderRadius: '8px' }}>
         <h1 style={{ color: '#000' }}>Search Users for "{query}"</h1>
@@ -66,9 +69,9 @@ export default function SearchPage() {
         {!loading && results.length === 0 && !error && <p style={{ color: '#000' }}>No users found.</p>}
 
         <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
-          {results.map((user, idx) => (
+          {results.map((user) => (
             <li
-              key={idx}
+              key={user.id}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -112,4 +115,3 @@ export default function SearchPage() {
     </div>
   )
 }
-
