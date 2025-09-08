@@ -1,6 +1,8 @@
 'use client'
+export const dynamic = "force-dynamic";
 
 import { Header } from '@/components/Header'
+
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -110,3 +112,4 @@ export default function SearchPage() {
     </div>
   )
 }
+
